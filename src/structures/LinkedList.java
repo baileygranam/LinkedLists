@@ -7,8 +7,11 @@ package structures;
  *  Lists.
  *
  *  @author Daniel Plante
+ *  @author Bailey Granam
+ *  
  *  @version 1.0   2 March 2002
  *  @version 1.1   19 November 2013
+ *  @version 1.2   13 April 2017
  */
 public class LinkedList<E>
 {
@@ -76,6 +79,7 @@ public class LinkedList<E>
     {
         node.setNext(myHead);
         myHead = node;
+        mySize++;
     }
     
     /**
@@ -92,7 +96,7 @@ public class LinkedList<E>
      *        been added to the beginning of the list
      *  </pre>
      *
-     *  @param datum the object used to creat a new node to be 
+     *  @param datum the object used to create a new node to be 
      *         entered at the head of the list
      */
     public void addFirst(E datum)
@@ -123,12 +127,14 @@ public class LinkedList<E>
         if(myHead==null)
         {
             this.addFirst(node);
+            mySize++;
         }
         else
         {
             lastNode = this.getPrevious(null);
             lastNode.setNext(node);
             node.setNext(null);
+            mySize++;
         }
     }
     
@@ -143,7 +149,7 @@ public class LinkedList<E>
      *        been added to the end of the list
      *  </pre>
      *
-     *  @param datum the object used to creat a new node to be 
+     *  @param datum the object used to create a new node to be 
      *         entered at the tail of the list
      */
     public void addLast(E datum)
@@ -170,14 +176,98 @@ public class LinkedList<E>
      *  @return boolean indicating whether or not the node
      *          was deleted
      */
-    private boolean remove(Node<E> myNode)
+    private boolean remove(Node<E> node)
     {
-        Node<E> myRemoveNode   = myNode;
+        /**
+         * Assign the node parameter passed through to Node<E> variable, myRemoveNode.
+         */
+        Node<E> myRemoveNode = node;
         
-        return false;
+        /**
+         * If the node passed through is null then return false.
+         */
+        if(myRemoveNode == null)
+        {
+            return false;
+        }
         
+        /** 
+         * If the node passed through does not exist in the linked 
+         * list then return false.
+         */
+        if(!this.contains(myRemoveNode.getData()))
+        {
+            return false;
+        }
+
+        /**
+         * If the head is null then we are unable to remove the node and will return false.
+         */
+        if(myHead == null) 
+        {
+            return false;
+        }
         
+        Node<E> myPreviousNode = this.getPrevious(node);
+        Node<E> myNextNode     = node.getNext();
         
+        /**
+         * If the node that was passed in has a previous node value equal to null
+         * then this means the node passed through is possibly the head. Before we complete 
+         * any further operations we must see if the myNextNode is null
+         * or if it exists.
+         */
+        if(myPreviousNode == null)
+        {
+            /** 
+             * If the previous node is null (checked in the previous statement above) 
+             * and the next node after myRemoveNode is null then it is likely that the
+             * head is indeed the node to be removed. Just to be 100% sure we will also
+             * check that myRemoveNode is equal to myHead.
+             */
+            if((myNextNode == null) && (myRemoveNode == getHead()))
+            {
+                mySize--;
+                this.setHead(null);
+                return true; 
+            }
+            /**
+             * If there is a node after the head then we will remove the first node in the 
+             * list and re-establish a new head as the next node.
+             */
+            else 
+            {
+                mySize--;
+                this.setHead(myNextNode);
+                return true;
+            }
+        }
+        
+        /**
+         * If the head was not the node then the node to be removed in somewhere else in 
+         * the linked list. We already checked to see if myPreviousNode is null. If we
+         * reached this point then myPreviousNode has a value. We must now check to see
+         * if myNextNode is the tail (null). If it is the tail then we will remove it
+         * and return true.
+         */
+        if(myNextNode == null)
+        {
+            myPreviousNode.setNext(null);
+            mySize--;
+            return true;
+        }
+        /**
+         * If the next node has a value then this means the node we are looking to remove
+         * in somewhere in the list that is neither the head or tail. In this case we can
+         * simply set the previous node to point to the next node, thus removing the node
+         * we originally wanted to remove. Return true in this case.
+         */
+        else 
+        {
+            myPreviousNode.setNext(myNextNode);
+            mySize--;
+            return true; 
+        }        
     }
     
     /**
@@ -219,9 +309,9 @@ public class LinkedList<E>
     private Node<E> findNode(E datum)
     {
         Node<E> currentNode;
-        Object currentDatum;
+        E currentDatum;
         
-        currentNode = myHead;
+        currentNode = getHead();
         currentDatum = null;
         
         while(currentNode != null)
@@ -253,8 +343,18 @@ public class LinkedList<E>
      */
     public boolean contains(E datum)
     {
-        return false;
-        
+        if(datum == null && myHead == null)
+        {
+            return true;
+        }
+        else if(findNode(datum) == null)
+        {
+            return false;
+        }
+        else
+        {
+            return true;
+        } 
     }
     
     /**
@@ -310,7 +410,18 @@ public class LinkedList<E>
      */
     private boolean insertBefore(Node<E> node, Node<E> beforeNode)
     {
-        return false;
+        if(beforeNode == null)
+        {
+            return false;
+        }
+        else
+        {
+            Node<E> myNextNode = beforeNode.getNext();
+            beforeNode.setNext(node);
+            node.setNext(myNextNode);
+            mySize++;
+            return true;
+        }    
     }
     
     /**
@@ -333,9 +444,12 @@ public class LinkedList<E>
      *  @return boolean designating if the node was or was not
      *          entered
      */
-    public boolean insertBefore(Object datum, Object beforeDatum)
+    public boolean insertBefore(E datum, E beforeDatum)
     {
-        return false;
+        Node<E> myNode     =   new Node<E>(datum);
+        Node<E> myBeforeNode = findNode(beforeDatum);
+
+        return insertBefore(myNode,myBeforeNode);
     }
     
     /**
@@ -365,49 +479,159 @@ public class LinkedList<E>
         return string;
     }
 
-    // ALSO!  Comment and implement the following methods.
-    // !!!
-
-    public int indexOf(Object o)
+    /**
+     * Method to find the index of a specific node given the datum of 
+     * that node.
+     * 
+     * @param o the data of the node we are looking for
+     * @return the index of which the node is located in the linked list
+     */
+    public int indexOf(E o)
     {
-        return 0;
+        if(o==null)
+        {
+            return -1;
+        }
+        if(this.findNode(o) == null)
+        {
+            return -1;
+        }
+        else
+        {
+            Node<E> myNode        = findNode(o);
+            Node<E> myCurrentNode = myHead;
+            int index             = 0;
+            
+            while(myCurrentNode != myNode)
+            { 
+                myCurrentNode = myCurrentNode.getNext();
+                index++;
+            }
+            return index;
+        }
     }
 
+    /**
+     * Method to easily remove the first node in the linked list. If the linked list
+     * has a null head then return null. Otherwise remove the first node.
+     * 
+     * @return the value of the removed node
+     */
     public E removeFirst()
     {
-        
-        return null;
+        if(myHead == null)
+        {
+            return null;
+        }
+        else
+        {
+            E myFirstNode = this.getFirst();
+            remove(myFirstNode);
+            return myFirstNode;
+        }
     }
     
+    /**
+     * Method to easily remove the last node in the linked list. If the linked list
+     * has a null head then return null. Otherwise remove the last node.
+     * 
+     * @return the value of the removed node
+     */
     public E removeLast()
     {
-        return null;
+        if(myHead == null)
+        {
+            return null;
+        }
+        E myLastNode = this.getLast();
+        remove(myLastNode);
+        return myLastNode;
     }
 
+    /**
+     * Method to return the size of the linked list.
+     * 
+     * @return list size
+     */
     public int size()
     {
-        return 0;
+        return mySize;
     }
 
-    public Object getFirst()
+    /**
+     * Method that gets the datum of the first node in the linked list.
+     * @return datum of first node
+     */
+    public E getFirst()
     {
-        return null;
+        // If the linked list is empty return null
+        if(myHead == null)
+        {
+            return null;
+        }
+        // Return datum of the first node in the linked list
+        else
+        {
+            return getHead().getData();
+        }
     }
     
-    public Object getLast()
+    /**
+     * Method that gets the datum of the last node in the linked list.
+     * @return datum of last node
+     */
+    public E getLast()
     {
-        return null;
+        Node<E> myLastNode = myHead;
+        
+        // If the linked list is empty return null
+        if(myHead == null)
+        {
+            return null;
+        }        
+        
+        // Loop through the linked list until reaching the end. Return the datum of the last node.
+        for(Node<E> myStart = myHead; myStart != null; myStart = myStart.getNext())
+        {
+           if(myStart.getNext() == null)
+           {
+               myLastNode = myStart;
+           }
+        }
+        
+        return myLastNode.getData();
     }
 
-    public void setFirst(Object o)
+    /**
+     * Method that inserts a node at the beginning of the list.
+     * @param o datum to be inserted into linked list at the beginning
+     */
+    public void setFirst(E o)
     {
+        if(myHead == null)
+        {
+            this.addFirst(o);
+        }
+        else 
+        {
+            Node<E> mySetFirst = new Node<E>(o);
+            this.setHead(mySetFirst);
+        }
     }
     
+    /**
+     * Method to set the head of the linked list
+     * @param node to be set as the head
+     */
     private void setHead(Node<E> node)
     {
         myHead = node;
     }
     
+    /**
+     * Method to get the head of the linked list
+     * @return head of list
+     */
     private Node<E> getHead()
     {
         return myHead;
@@ -429,6 +653,7 @@ public class LinkedList<E>
          *  Default constructor for a node with null
          *  data and pointer to a next node
          */
+        @SuppressWarnings("unused")
         public Node()
         {
             myData = null;
@@ -466,6 +691,7 @@ public class LinkedList<E>
          *  @param datum an object for the node's data
          *  @param next the node that this node points to
          */
+        @SuppressWarnings("unused")
         public Node(T datum, Node<T> next)
         {
             myData = datum;
@@ -473,6 +699,7 @@ public class LinkedList<E>
         }
         
         // Accessor methods
+        @SuppressWarnings("unused")
         public void setData(T datum)
         {
             myData = datum;
